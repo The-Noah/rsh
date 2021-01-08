@@ -42,7 +42,10 @@ fn main() {
 
     while let Some(command) = commands.next() {
       let mut args = command.trim().split_whitespace();
-      let command = args.next().unwrap();
+      let command = match args.next() {
+        Some(val) => val,
+        None => continue,
+      };
 
       match command {
         "exit" => return,
