@@ -11,8 +11,27 @@ fn cwd() -> String {
 }
 
 fn main() {
+  let home_dir = &env::var("USERPROFILE").unwrap();
+  let home_path = Path::new(home_dir);
+
   loop {
-    print!("{}{}${} ", cwd(), BRIGHT, RESET);
+    let current_dir = env::current_dir().unwrap();
+    let print_path = current_dir.strip_prefix(home_path).unwrap_or(current_dir.as_path());
+    print!(
+      "{}{}{}${} ",
+      if print_path != current_dir {
+        if print_path != home_path {
+          "~/"
+        } else {
+          "~"
+        }
+      } else {
+        ""
+      },
+      print_path.to_str().unwrap().replace("\\", "/"),
+      BRIGHT,
+      RESET
+    );
     stdout().flush().unwrap();
 
     let mut input = String::new();
@@ -28,9 +47,13 @@ fn main() {
       match command {
         "exit" => return,
         "cd" => {
-          let new_dir = args.peekable().peek().map_or(".", |x| *x);
-          let root = Path::new(new_dir);
-          if let Err(e) = env::set_current_dir(&root) {
+          let mut new_dir = args.peekable().peek().map_or(".", |x| *x);
+          if new_dir == "~" {
+            new_dir = home_dir;
+          }
+          let path = Path::new(new_dir);
+
+          if let Err(e) = env::set_current_dir(&path) {
             eprintln!("{}", e);
           }
         }
