@@ -3,8 +3,7 @@ use std::io::{stdin, stdout, Write};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 
-const RESET: &str = "\x1b[0m";
-const BRIGHT: &str = "\x1b[1m";
+mod color;
 
 fn cwd() -> String {
   env::current_dir().unwrap().to_str().unwrap().to_owned()
@@ -17,8 +16,10 @@ fn main() {
   loop {
     let current_dir = env::current_dir().unwrap();
     let print_path = current_dir.strip_prefix(home_path).unwrap_or(current_dir.as_path());
+
     print!(
-      "{}{}{}${} ",
+      "{}{}{}{}$ ",
+      color::BLUE,
       if print_path != current_dir {
         if print_path != home_path {
           "~/"
@@ -29,10 +30,11 @@ fn main() {
         ""
       },
       print_path.to_str().unwrap().replace("\\", "/"),
-      BRIGHT,
-      RESET
+      color::RESET,
     );
     stdout().flush().unwrap();
+
+    // let result = Command::new("git").arg("status").arg("--porcelain").arg(file_path).output();
 
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
