@@ -17,8 +17,15 @@ fn main() {
     let current_dir = env::current_dir().unwrap();
     let print_path = current_dir.strip_prefix(home_path).unwrap_or(current_dir.as_path());
 
+    let current_branch = {
+      let command = Command::new("git").arg("branch").arg("--no-color").arg("--show-current").stdout(Stdio::piped()).output().unwrap();
+      let text = String::from_utf8(command.stdout).unwrap().replace("\n", "").replace("\r", "");
+
+      text
+    };
+
     print!(
-      "{}{}{}{}$ ",
+      "{}{}{}{}",
       color::BLUE,
       if print_path != current_dir {
         if print_path != home_path {
@@ -32,9 +39,14 @@ fn main() {
       print_path.to_str().unwrap().replace("\\", "/"),
       color::RESET,
     );
-    stdout().flush().unwrap();
 
-    // let result = Command::new("git").arg("status").arg("--porcelain").arg(file_path).output();
+    if current_branch.len() > 0 {
+      print!(" {}[{}]{}", color::YELLOW, current_branch, color::RESET);
+    }
+
+    print!("$ ");
+
+    stdout().flush().unwrap();
 
     let mut input = String::new();
     stdin().read_line(&mut input).unwrap();
